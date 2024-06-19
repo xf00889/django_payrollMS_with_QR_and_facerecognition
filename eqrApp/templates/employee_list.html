@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load humanize %} 
+{% load customfilter %} 
+{% block pageContent %}
+
+    
+    <style>
+    .input-group {
+        position: relative;
+    }
+
+    label {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        color: #333;
+        font-weight: bold;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+    }
+</style>
+    
+<!-- Section: Content -->
+<h3 class="fw-bolder">{{ page_title }}</h3>
+<hr><br>
+
+    <div class="text-start mb-2">
+    <form id="search-form">
+        <div class="input-group">
+            <label for="search-input" >Search Employee</label>
+            <input type="text" class="form-control rounded-0" placeholder="Search by Name or ID" id="search-input">
+        </div>
+    </form>
+</div>
+    <br>
+<section class="py-3">
+
+
+
+    <div class="container">
+        <div class="card rounded-0 shadow-sm blur">
+            <div class="card-body">
+                <div class="container-fluid">
+                    <div class="text-end mb-2">
+    <a href="{% url 'add-employee' %}" class="btn btn-primary btn-sm rounded-0 bg-gradient">
+        <i class="fa fa-plus"></i> Add New Employee
+    </a>
+                                  {% if employee.pk %}
+    <a href="{% url 'add_payroll' pk=employee.pk %}" class="btn btn-primary btn-sm rounded-0 bg-gradient">
+        <i class="fa fa-plus"></i> Add Payroll Information
+    </a>
+{#    <a href="{% url 'create_user' employee.pk %}" class="btn btn-primary btn-sm rounded-0 bg-gradient">#}
+{#    <i class="fa fa-plus"></i> Assign Account#}
+{#</a>#}
+    {% endif %}
+</div>
+
+                    <table class="table table-stripped table-bordered">
+                        <colgroup>
+                            <col width="5%">
+                            <col width="15%">
+                            <col width="20%">
+                            <col width="25%">
+                            <col width="25%">
+                            <col width="10%">
+                        </colgroup>
+                        <thead>
+                            <tr class="bg-primary bg-gradient text-light">
+                                <th class="text-center">#</th>
+                                <th class="text-center">Date Added</th>
+                                <th class="text-center">Company ID</th>
+                                <th class="text-center">Name</th>
+                                <th class="text-center">Dept./Pos.</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for employee in employees %}
+                            <tr>
+                                <td class="text-center">{{ forloop.counter }}</td>
+                                <td>{{ employee.date_created|date:"M d, Y H:i" }}</td>
+                                <td>{{ employee.employee_code }}</td>
+                                <td>{{ employee.first_name }} {{ employee.last_name }}</td>
+                                <td>
+                                    <div class="lh-1">
+                                        <div>{{ employee.department }}</div>
+                                        <div>{{ employee.position }}</div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <button class="btn btn-light border bg-gradient btn-sm rounded-0 dropdown-toggle" type="button" id="employeeDD{{ employee.pk }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Action
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="employeeDD{{ employee.pk }}">
+                                         {% if employee.employee_code %}
+                                         <li><a class="dropdown-item view_detail" href="javascript:void(0)" data-url="{% url 'view-details' employee.employee_code %}">View Data</a></li>
+                                        {% else %}
+        <li><a class="dropdown-item" href="#">No Employee Code</a></li>
+    {% endif %}
+    <li><a class="dropdown-item view_card" href="javascript:void(0)" data-url="{% url 'view-card' employee.pk %}">View ID</a></li>
+<li><a class="dropdown-item view_payroll" href="{% url 'view_payroll_info' employee.pk %}" id="pay_info">View Pay Information</a></li></ul>
+                                    </div>
+                                <!-- Modal Container -->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% if not employees %}
+                            <tr>
+                            <tr>
+                            <tr>
+                                <th colspan="6" class="text-center">No records.</th>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock pageContent %}
+
+{% block ScriptBlock %}
+<script>
+
+  $(document).ready(function() {
+        $('.view_payroll').click(function(event) {
+            event.preventDefault();
+            var url = $(this).attr('href');
+            $('#payrollModalBody').load(url, function() {
+                $('#payrollModal').modal('show');
+            });
+        });
+    });
+     $(function() {
+        $('#search-input').on('input', function() {
+            var searchValue = $(this).val().trim().toLowerCase();
+            $('tbody tr').each(function() {
+                var name = $(this).find('td:nth-child(4)').text().toLowerCase();
+                var id = $(this).find('td:nth-child(3)').text().toLowerCase();
+                if (name.includes(searchValue) || id.includes(searchValue)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    });
+
+    function uni_modal(title, url, size) {
+        start_loader();
+        $.ajax({
+            url: url,
+            error: function(err) {
+                console.log(err);
+                alert("An error occurred");
+                end_loader();
+            },
+            success: function(resp) {
+                if (resp) {
+                    $('#uni_modal .modal-title').html(title);
+                    $('#uni_modal .modal-body').html(resp);
+                    if (size !== '') {
+                        $('#uni_modal .modal-dialog').addClass(size + ' modal-dialog-centered');
+                    } else {
+                        $('#uni_modal .modal-dialog').removeAttr("class").addClass("modal-dialog modal-md modal-dialog-centered");
+                    }
+                    $('#uni_modal').modal({
+                        backdrop: 'static',
+                        keyboard: false,
+                        focus: true
+                    });
+                    $('#uni_modal').modal('show');
+                    end_loader();
+                }
+            }
+        });
+    }
+
+    function start_loader() {
+        if (!$('#pre-loader').length) {
+            $('body').append('<div id="pre-loader"><div class="lds-default"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>');
+        }
+        $('body').addClass('loading');
+    }
+    function end_loader() {
+        $('#pre-loader').remove();
+        $('body').removeClass('loading');
+    }
+</script>
+{% endblock ScriptBlock %}

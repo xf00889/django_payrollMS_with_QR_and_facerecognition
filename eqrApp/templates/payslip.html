@@ -1,0 +1,27 @@
+
+
+<div class="container-fluid" id="view-payslip">
+    <div class="d-flex mb-3">
+        <div class="px-2">
+            <div class="view-payslip">
+                <div class="head-text text-center fw-bolder">{{ system_name }}</div>
+                <div class="lh-1">
+                    <h1>Mighty Hok Summit Constructions</h1>
+                    <br>
+                    <h3>{{ payslip.employee.first_name }} {{ payslip.employee.last_name }}</h3>
+                    <p>Employee Code: {{ payslip.employee.employee_code }}</p>
+                    <p>Gross Pay: {{ payslip.gross_pay }}</p>
+                    <p>Net Pay: {{ payslip.net_pay }}</p>
+                    <p>Date Received: {{ payslip.date_received }}</p>
+                    <p>Professional Tax: {{ payslip.professional_tax }}</p>
+
+                    <h3>Pay Information</h3>
+                    <p>Basic Pay: {{ payslip.payroll.basic_pay }}</p>
+                    <p>Incentive Pay: {{ payslip.payroll.incentive_pay }}</p>
+                    <p>House Rent Allowance: {{ payslip.payroll.house_rent_allowance }}</p>
+                    <p>Meal Allowance: {{ payslip.payroll.meal_allowance }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

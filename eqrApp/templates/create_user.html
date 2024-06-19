@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block pageContent %}
+<div class="container">
+    <h1>Create User</h1>
+    <form method="post">
+        {% csrf_token %}
+        <!-- Select Employee -->
+        <div class="mb-3">
+            <label for="employee">Select Employee:</label>
+            <select class="form-control" name="employee" id="employee" required>
+                <option value="" selected disabled>Select Employee</option>
+                {% for employee in employees %}
+                <option value="{{ employee.id }}">{{ employee.first_name }} {{ employee.last_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <!-- User Model Fields -->
+        <div class="mb-3">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" name="username" id="username" required>
+        </div>
+        <div class="mb-3">
+            <label for="email">Email:</label>
+            <input type="email" class="form-control" name="email" id="email" required>
+        </div>
+        <div class="mb-3">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" name="password" id="password" required>
+        </div>
+        <!-- Employee Model Fields -->
+        <div class="mb-3">
+            <label for="employee_code">Employee Code:</label>
+            <input type="text" class="form-control" name="employee_code" id="employee_code" required>
+        </div>
+        <div class="mb-3">
+            <label for="first_name">First Name:</label>
+            <input type="text" class="form-control" name="first_name" id="first_name" required>
+        </div>
+        <div class="mb-3">
+            <label for="last_name">Last Name:</label>
+            <input type="text" class="form-control" name="last_name" id="last_name" required>
+        </div>
+        <!-- Add other Employee model fields here -->
+        <button type="submit" class="btn btn-primary">Create User</button>
+    </form>
+</div>
+{% endblock pageContent %}
+<script>
+    
+     document.getElementById("userCreationForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        fetch('/create_user/', {
+            method: 'POST',
+            body: new FormData(document.getElementById("userCreationForm")),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const messageDiv = document.getElementById("message");
+            if (data.success) {
+                messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+            } else {
+                messageDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+    
+</script>

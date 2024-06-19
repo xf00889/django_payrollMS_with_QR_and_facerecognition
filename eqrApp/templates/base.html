@@ -1,0 +1,436 @@
+{% load static %}
+{% load customfilter %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% if page_title %}
+    <title>{{ page_title }} | {{ system_name }} </title>
+    {% else %}
+    <title>{{ system_name }}</title>
+    {% endif %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+        integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/default/css/style.css' %}">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js"
+        integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="{% static 'assets/default/js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'assets/bootstrap/js/popper.min.js' %}"></script>
+    <script src="{% static 'assets/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'assets/default/js/script.js' %}"></script>
+    <style>
+        .modal-sub-footer {
+            display: flex;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0.75rem;
+            border-top: 1px solid #dee2e6;
+            border-bottom-right-radius: calc(0.3rem - 1px);
+            border-bottom-left-radius: calc(0.3rem - 1px);
+        }
+     
+    </style>
+    {% block headerContent %} {% endblock headerContent %}
+</head>
+
+<body class="">
+    {% block TopNavigation %}
+        {% include "TopNavigation.html" %}
+    {% endblock TopNavigation %}
+    <main class="py-5">
+        <div class="container mb-3">
+            {% if messages %}
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    {% for message in messages %}
+                    <div
+                        class="alert alert-{% if message.extra_tags %}{{ message.tags|replaceBlank:message.extra_tags|replaceBlank:' ' }}{% else %}{{ message.tags }}{% endif %} w-100 rounded-0 mb-2 redirect-msg">
+                        <div class="d-flex w-100">
+                            <div class="col-auto flex-shrink-1 flex-grow-1">{{ message|safe }}</div>
+                            <div class="col-auto text-center">
+                                <button class="btn-close btn-sm text-sm" type="button"
+                                    onclick="$(this).closest('.alert').remove()"></button>
+                            </div>
+                        </div>
+                    </div>
+                    {% if message.extra_tags != 'stay' %}
+                    <script>
+                        $(function() {
+                            if ($('.redirect-msg').length > 0) {
+                                setTimeout(() => {
+                                    $('.redirect-msg').hide('slideUp')
+                                    setTimeout(() => {
+                                        $('.redirect-msg').remove()
+                                    }, 500)
+                                }, 3500)
+                            }
+                        })
+                    </script>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% block pageContent %}
+                {% if request.path == '/' %}
+                    {% include "home.html" %}
+                {% elif request.path == '/employee_list/' %}
+                    {% include "employee_list.html" %}
+                {% elif request.path == '/payroll_list/' %}
+                    {% include "payroll.html" %}
+                {% elif request.get_full_path == '/home/#' %}
+                    {% include "home.html" %}
+                {% elif request.get_full_path == '/view_payroll/' %}
+                    {% include "view_payroll_info.html" %}
+                {% elif request.get_full_path == '/manage_employee/<int:pk>/add_payroll/' %}
+                    {% include "add_pay_info.html" %}
+                {% elif request.get_full_path == '/payroll/view/<int:payslip_id>' %}
+                    {% include "payroll.html" %}
+               
+                    {# Add any other page content here #}
+                    
+                {% endif %}
+            {% endblock pageContent %}
+        </div>
+    </main>
+
+    {% block ScriptBlock %} {% endblock ScriptBlock %}
+    <div class="modal fade" id="uni_modal" role='dialog'>
+        <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable" role="document">
+            <div class="modal-content rounded-0">
+                <div class="modal-header">
+                    <h5 class="modal-title"></h5>
+                </div>
+                <div class="modal-body">
+                </div>
+                    <div class="modal-footer">
+{#        <button type="button"#}
+{#            class="btn  btn-sm btn-flat btn-primary rounded-0"#}
+{#            id='submit' onclick="$('#uni_modal form').submit()">Save</button>#}
+{#        <button type="button"#}
+{#            class="btn btn-sm btn-flat btn-light border rounded-0"#}
+{#            data-bs-dismiss="modal">Cancel</button>#}
+    </div>
+    <div class="modal-sub-footer">
+        <button type="button"
+            class="btn btn-sm btn-flat btn-light border rounded-0"
+            data-bs-dismiss="modal">Close</button>
+    </div>
+</div>
+</div>
+</div>
+<div class="modal fade" id="confirm_modal" role='dialog'>
+    <div class="modal-dialog modal-md modal-dialog-centered" role="document">
+        <div class="modal-content rounded-0">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation</h5>
+            </div>
+            <div class="modal-body">
+                <div id="delete_content"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                    class="btn btn-sm btn-flat btn-primary rounded-0"
+                    id='confirm' onclick="">Continue</button>
+                <button type="button"
+                    class="btn btn-sm btn-flat btn-light border rounded-0"
+                    data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+    
+</div>
+    <div class="modal fade" id="payrollModal" tabindex="-1" aria-labelledby="payrollModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="payrollModalLabel">Payroll Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!-- Modal Body -->
+            <div class="modal-body" id="payrollModalBody">
+                <!-- Content loaded via AJAX will appear here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% if footer %}
+<footer class="bg-light text-lg-start">
+    <div class="text-center p-3"
+        style="background-color: rgba(0, 0, 0, 0.2);">
+        © {% now 'Y' %} Copyright:
+        <a class="text-dark" href="" target="_blank">HN Mighty Hok Summit Constructions</a>
+    </div>
+</footer>
+{% endif %}
+<script>
+    const loader = $('<div>')
+    loader.attr('id', 'pre-loader')
+    loader.html('<div class="lds-default"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>')
+
+    window.start_loader = function () {
+        $('body').removeClass('loading')
+        if ($('#pre-loader').length > 0)
+            $('#pre-loader').remove();
+        $('body').append(loader)
+        $('body').addClass('loading')
+    }
+    window.end_loader = function () {
+        if ($('#pre-loader').length > 0)
+            $('#pre-loader').remove();
+        $('body').removeClass('loading')
+    }
+    window.uni_modal = function ($title = '', $url = '', $size = "") {
+        start_loader()
+        $.ajax({
+            url: $url,
+            error: err => {
+                console.log()
+                alert("An error occured")
+            },
+            success: function (resp) {
+                if (resp) {
+                    $('#uni_modal .modal-title').html($title)
+                    $('#uni_modal .modal-body').html(resp)
+                    if ($size != '') {
+                        $('#uni_modal .modal-dialog').addClass($size + '  modal-dialog-centered')
+                    } else {
+                        $('#uni_modal .modal-dialog').removeAttr("class").addClass("modal-dialog modal-md modal-dialog-centered")
+                    }
+                    $('#uni_modal').modal({
+                        backdrop: 'static',
+                        keyboard: false,
+                        focus: true
+                    })
+                    $('#uni_modal').modal('show')
+                    end_loader()
+                }
+            }
+        })
+    }
+    
+    window._conf = function ($msg = '', $func = '', $params = []) {
+        $('#confirm_modal #confirm').attr('onclick', $func + "(" + $params.join(',') + ")")
+        $('#confirm_modal .modal-body').html($msg)
+        $('#confirm_modal').modal('show')
+    }
+    
+    $('#uni_modal').on('shown.bs.modal', function () {
+        if ($('#e-details').length > 0) {
+            var delete_btn = $('<button id="delete-btn" class="btn btn-danger btn-sm bg-gradient rounded-0 me-2"><i class="fa fa-trash"></i> Delete</button>')
+            var edit_btn = $('<a id="edit-btn" href="' + emp_edit_url + '" class="btn btn-primary btn-sm bg-gradient rounded-0 me-2"><i class="fa fa-edit"></i> Edit</a>')
+            $(this).find('.modal-sub-footer').prepend(delete_btn)
+            $(this).find('.modal-sub-footer').prepend(edit_btn)
+            delete_btn.click(function () {
+                _conf("Are you sure to delete this employee?", "delete_employee")
+            })
+
+            $('#uni_modal').on('hide.bs.modal', function () {
+                delete_btn.remove()
+                edit_btn.remove()
+            })
+
+        }
+    })
+
+
+{#    $('#uni_modal').on('shown.bs.modal', function () {#}
+{#    if ($('#pay_info').length > 0) {#}
+{#        var delete_btn = $('<button id="delete-btn" class="btn btn-danger btn-sm bg-gradient rounded-0 me-2"><i class="fa fa-trash"></i> Delete</button>');#}
+{#        var edit_btn = $('<a id="edit-btn" href="' + pay_edit_url + '" class="btn btn-primary btn-sm bg-gradient rounded-0 me-2"><i class="fa fa-edit"></i> Edit</a>');#}
+{##}
+{#        $(this).find('.modal-sub-footer').prepend(delete_btn);#}
+{#        $(this).find('.modal-sub-footer').prepend(edit_btn);#}
+{##}
+{#        delete_btn.click(function () {#}
+{#            _conf("Are you sure to delete this Payroll Information?", "delete_payroll");#}
+{#        });#}
+{#        $('#uni_modal').on('hide.bs.modal', function () {#}
+{#            delete_btn.remove();#}
+{#            edit_btn.remove();#}
+{#        });#}
+{#    }#}
+{#});#}
+    {#$(document).ready(function() {#}
+    {#    $('.pay_info').click(function () {#}
+    {#        uni_modal("View Payroll Information", $(this).attr('data-url'), 'modal-lg');#}
+    {#    });#}
+    {##}
+    {#    $('#uni_modal').on('shown.bs.modal', function () {#}
+    {#        if ($('#pay_info').length > 0) {#}
+    {#            var delete_btn = $('<button id="delete-btn" class="btn btn-danger btn-sm bg-gradient rounded-0 me-2"><i class="fa fa-trash"></i> Delete</button>');#}
+    {#            var edit_btn = $('<a id="edit-btn" href="' + pay_edit_url + '" class="btn btn-primary btn-sm bg-gradient rounded-0 me-2"><i class="fa fa-edit"></i> Edit</a>');#}
+    {##}
+    {#            $(this).find('.modal-sub-footer').prepend(delete_btn);#}
+    {#            $(this).find('.modal-sub-footer').prepend(edit_btn);#}
+    {##}
+    {#            delete_btn.click(function () {#}
+    {#                _conf("Are you sure to delete this Payroll Information?", "delete_payroll");#}
+    {#            });#}
+    {#            $('#uni_modal').on('hide.bs.modal', function () {#}
+    {#                delete_btn.remove();#}
+    {#                edit_btn.remove();#}
+    {#            });#}
+    {#        }#}
+    {#    });#}
+    {#});#}
+    
+    
+     $(document).ready(function() {
+        $('.view_payslip').click(function () {
+            uni_modal("View Payslips", $(this).attr('data-url'), 'modal-lg');
+        });
+    });
+
+    $('.view_card').click(function () {
+        uni_modal("View Employee ID", $(this).attr('data-url'), 'modal-lg');
+    });
+
+    $('.view_detail').click(function () {
+        uni_modal("View Employee Details", $(this).attr('data-url'), 'modal-lg');
+    });
+    
+    $('#uni_modal').on('shown.bs.modal', function () {
+        if ($('#id-card').length > 0) {
+            var print_btn = $('<button id="print-card" class="btn btn-success btn-sm bg-gradient rounded-0 me-2" type="button"><i class="fa fa-print"></i> Print</button>')
+            $(this).find('.modal-sub-footer').prepend(print_btn)
+            print_btn.click(function () {
+                var h = $("head").clone()
+                var style = $($("noscript#qr-style").html()).clone()
+                var card = $("#id-card").clone()
+                var el = $('<div>')
+
+                el.append(h)
+                el.append(style)
+                el.append(card)
+                start_loader()
+                var nw = window.open("", "_blank", "width=900, height=900")
+                nw.document.write(el.html())
+                nw.document.close()
+                setTimeout(() => {
+                    nw.print()
+                    setTimeout(() => {
+                        nw.close()
+                        end_loader()
+                    }, 300)
+                }, 300)
+
+            })
+
+            $('#uni_modal').on('hide.bs.modal', function () {
+                print_btn.remove()
+            })
+        }
+    })
+$(document).ready(function() {
+    {#$('.payroll-form').on('submit', function(event) {#}
+    {#    event.preventDefault(); // Prevent the form from submitting the traditional way#}
+    {##}
+    {#    $.ajax({#}
+    {#        url: '{% url "save_payroll" %}', // URL for the save_payroll view#}
+    {#        method: 'POST',#}
+    {#        data: $(this).serialize(), // Serialize the form data#}
+    {#        headers: {#}
+    {#            'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val() // Include the CSRF token#}
+    {#        },#}
+    {#        success: function(response) {#}
+    {#            if (response.status === 'success') {#}
+    {#                alert('Payroll information submitted successfully!');#}
+    {#                // Optionally, you can redirect or update the UI here#}
+    {#            } else {#}
+    {#                alert('An error occurred: ' + response.msg);#}
+    {#            }#}
+    {#        },#}
+    {#        error: function(xhr, status, error) {#}
+    {#            alert('An error occurred while submitting payroll information.');#}
+    {#        }#}
+    {#    });#}
+    {#});#}
+});
+
+ $('#uni_modal').on('shown.bs.modal', function () {
+        if ($('#view-payslip').length > 0) {
+            var print_btn = $('<button id="print-payslip" class="btn btn-success btn-sm bg-gradient rounded-0 me-2" type="button"><i class="fa fa-print"></i> Print</button>')
+            $(this).find('.modal-sub-footer').prepend(print_btn)
+            print_btn.click(function () {
+                var h = $("head").clone()
+                var style = $($("noscript#qr-style").html()).clone()
+                var card = $("#view-payslip").clone()
+                var el = $('<div>')
+
+                el.append(h)
+                el.append(style)
+                el.append(card)
+                start_loader()
+                var nw = window.open("", "_blank", "width=900, height=900")
+                nw.document.write(el.html())
+                nw.document.close()
+                setTimeout(() => {
+                    nw.print()
+                    setTimeout(() => {
+                        nw.close()
+                        end_loader()
+                    }, 300)
+                }, 300)
+
+            })
+
+            $('#uni_modal').on('hide.bs.modal', function () {
+                print_btn.remove()
+            })
+        }
+    })
+
+    function delete_employee() {
+        start_loader()
+        $.ajax({
+            url: emp_delete_url,
+            error: err => {
+                console.error(err)
+                alert("An error occurred.")
+                end_loader()
+            },
+            success: function (resp) {
+                if (resp.status == 'success') {
+                    location.reload()
+                } else if (!!resp.msg) {
+                    alert(resp.msg)
+                }
+                end_loader()
+            }
+        })
+    }
+     function delete_payroll() {
+         start_loader()
+         $.ajax({
+             url: pay_delete_url,
+             error: err => {
+                 console.error(err)
+                 alert("An error occurred.")
+                 end_loader()
+             },
+             success: function (resp) {
+                 if (resp.status == 'success') {
+                     location.reload()
+                 } else if (!!resp.msg) {
+                     alert(resp.msg)
+                 }
+                 end_loader()
+             }
+         })
+     }
+</script>
+</body>
+</html>

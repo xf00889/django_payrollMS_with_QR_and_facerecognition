@@ -1,0 +1,133 @@
+{% load static %}
+<header>
+    <!-- Intro settings -->
+    <style>
+        /* Basic styles */
+        .navbar {
+            background-color: #343a40;
+            padding: 1rem;
+        }
+        .navbar-brand {
+            color: #fff;
+            font-size: 1.5rem;
+        }
+        .navbar-brand:hover {
+            color: #d3d3d3;
+        }
+        .navbar-nav .nav-item .nav-link {
+            color: #fff;
+            margin-right: 1rem;
+            transition: color 0.3s, background-color 0.3s;
+            padding: 0.5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+        }
+        .navbar-nav .nav-item .nav-link:hover {
+            color: #d3d3d3;
+        }
+        .navbar-nav .nav-item .nav-link.active {
+            color: #ffeb3b;
+        }
+        .navbar-toggler {
+            border: none;
+        }
+        .navbar-toggler:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        .navbar-toggler .fas {
+            color: #fff;
+        }
+        .navbar-nav.d-flex .nav-item .nav-link.no-button {
+            color: #fff;
+            padding: 0.5rem;
+            background: none;
+            cursor: default;
+        }
+        .navbar-nav.d-flex .nav-item .nav-link.no-button:hover {
+            color: #d3d3d3;
+            background: none;
+        }
+        .navbar-nav .nav-item .nav-link i {
+            margin-right: 20px; /* Add space between icon and text */
+            
+        }
+
+        /* Jumbotron styles */
+        #intro {
+            padding: 4rem 0;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+
+        /* Extra styles for responsive adjustments if needed */
+        @media (max-width: 992px) {
+            .navbar-nav {
+                text-align: center;
+            }
+            .navbar-nav .nav-item .nav-link {
+                margin: 0.5rem 0;
+            }
+        }
+    </style>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <!-- Navbar brand -->
+            <a class="navbar-brand" target="_blank" href="./">
+                <b>QRAMS- Mighty Hok</b>
+            </a>
+            <!-- Toggler button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarExample01" aria-controls="navbarExample01" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <!-- Navbar items -->
+            <div class="collapse navbar-collapse" id="navbarExample01">
+
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="topNav">
+
+                <li class="nav-item">
+                        <a class="nav-link {% if request.get_full_path == '/attendance-emp/' %}active{% endif %}" aria-current="page" href="{% url 'attendance_emp' %}"><i style="margin-right: 10px;" class="fa-solid fa-user-clock"></i> Attendance</a>
+                    </li>
+
+
+                </ul>
+            
+                
+                <ul class="navbar-nav d-flex flex-row">
+                    {% if user.id %}
+                    <li class="nav-item">
+                        <span class="nav-link no-button"><b>Howdy, {{ user.username }}</b></span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link no-button" aria-current="page" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Navbar -->
+
+    <!-- Jumbotron -->
+    <div id="intro" class="pt-2 text-center bg-light">
+        <!-- Your jumbotron content -->
+    </div>
+    <!-- Jumbotron -->
+</header>
+<script>
+    $(function() {
+        $('#topNav .nav-link').each(function() {
+            var current = '{{ request.get_full_path | urlencode }}';
+            if (current == $(this).attr('href')) {
+                $(this).addClass('active');
+            }
+        });
+        $('#scanner-link').click(function(){
+            uni_modal("QR Scanner", $(this).attr('data_url'));
+        });
+    });
+</script>

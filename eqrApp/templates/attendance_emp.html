@@ -1,0 +1,132 @@
+{% extends "base_emp.html" %}
+{% block headerContent %}
+{% endblock headerContent %}
+{% block pageContent %}
+
+    
+    <style>
+    .table-smaller-font {
+        font-size: 0.85em; /* Adjust this value to make the font smaller or larger */
+    }
+</style>
+
+    
+<h3 class="fw-bolder" >Attendance Records</h3>
+<hr><br>
+<div class="text-start mb-2">
+    <form id="search-form">
+        <div class="input-group">
+            <label for="search-input"></label>
+            <input type="text" class="form-control rounded-0" placeholder="Search by Name or ID" id="search-input">
+        </div>
+    </form>
+</div>
+<br>
+
+<section class="py-3">
+    <div class="container">
+        <div class="card rounded-0 shadow-sm blur">
+            <div class="card-body">
+                <div class="container-fluid">
+                    <h4>Recent Attendance Records</h4>
+                    <table class="table table-stripped table-bordered table-smaller-font">
+                        <colgroup>
+                            <col style="width: 15%;">
+                            <col style="width: 10%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                        </colgroup>
+                        <thead>
+                            <tr class="bg-primary bg-gradient text-light">
+                                <th class="text-center">Employee</th>
+                                <th class="text-center">Date</th>
+                                <th class="text-center">Morning Check-In</th>
+                                <th class="text-center">Morning Check-Out</th>
+                                <th class="text-center">Afternoon Check-In</th>
+                                <th class="text-center">Afternoon Check-Out</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendance in future_attendances %}
+                            <tr>
+                                <td>{{ attendance.employee.first_name }} {% if attendance.employee.middle_name %}{{ attendance.employee.middle_name }}{% endif %} {{ attendance.employee.last_name }}</td>
+                                <td class="text-center">{{ attendance.date|date:"Y-m-d" }}</td>
+                                <td class="text-center">{{ attendance.morning_check_in|default_if_none:"-" }}</td>
+                                <td class="text-center">{{ attendance.morning_check_out|default_if_none:"-" }}</td>
+                                <td class="text-center">{{ attendance.afternoon_check_in|default_if_none:"-" }}</td>
+                                <td class="text-center">{{ attendance.afternoon_check_out|default_if_none:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <th colspan="6" class="text-center">No attendance data available</th>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h4>Attendance Records</h4>
+                    <table class="table table-stripped table-bordered table-smaller-font">
+                        <colgroup>
+                            <col style="width: 15%;">
+                            <col style="width: 10%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                            <col style="width: 20%;">
+                        </colgroup>
+                        <thead>
+                            <tr class="bg-primary bg-gradient text-light">
+                                <th class="text-center">Employee</th>
+                                <th class="text-center">Date</th>
+                                <th class="text-center">Morning Check-In</th>
+                                <th class="text-center">Morning Check-Out</th>
+                                <th class="text-center">Afternoon Check-In</th>
+                                <th class="text-center">Afternoon Check-Out</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attendance in past_attendances %}
+                            <tr>
+                                <td>{{ attendance.employee.first_name }} {% if attendance.employee.middle_name %}{{ attendance.employee.middle_name }}{% endif %} {{ attendance.employee.last_name }}</td>
+                                <td class="text-center">{{ attendance.date|date:"Y-m-d" }}</td>
+                                <td class="text-center">{{ attendance.morning_check_in|default_if_none:"-" }}</td>
+                                <td class="text-center">{{ attendance.morning_check_out|default_if_none:"-" }}</td>
+                                <td class="text-center">{{ attendance.afternoon_check_in|default_if_none:"-" }}</td>
+                                <td class="text-center">{{ attendance.afternoon_check_out|default_if_none:"-" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <th colspan="6" class="text-center">No attendance data available</th>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock pageContent %}
+
+{% block ScriptBlock %}
+<script>
+   $(function() {
+        $('table').find('td, th').addClass('align-middle px-2 py-1');
+
+        $('#search-input').on('input', function() {
+            var searchValue = $(this).val().trim().toLowerCase();
+            $('tbody tr').each(function() {
+                var name = $(this).find('td:nth-child(1)').text().toLowerCase(); // Adjust the column index for Employee Name
+                var id = $(this).find('td:nth-child(2)').text().toLowerCase(); // Adjust the column index for Employee ID
+                if (name.includes(searchValue) || id.includes(searchValue)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    });
+</script>
+{% endblock ScriptBlock %}

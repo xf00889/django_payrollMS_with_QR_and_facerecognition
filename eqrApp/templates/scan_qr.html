@@ -1,0 +1,123 @@
+{% load static %}
+<script src="{% static 'assets/instascan.min.js' %}"></script>
+<style>
+    body {
+        background-color: #ffffff;
+        color: #000000;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #scanner-holder {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    #scanner {
+        width: 100%;
+        max-width: 600px;
+        height: 50vh;
+        object-fit: cover;
+        border: 2px solid #373636;
+        border-radius: 10px;
+    }
+
+    .manual-entry-container {
+        text-align: center;
+        margin-top: -180px;
+    }
+
+    .manual-entry-container input[type="text"] {
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 2px solid #2d2b2b;
+        border-radius: 5px;
+        background-color: transparent;
+        color: #000000;
+    }
+
+    .manual-entry-container button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: #0059ec;
+        color: #ffffff;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .manual-entry-container button:hover {
+        background-color: #0163fd;
+    }
+
+    .messages {
+        position: absolute;
+        top: 120px; /* Adjust top position as needed */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        width: 500px;
+        text-align: center;
+        font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+        font-weight: bold;
+        color: green;
+        font-size: 20px;
+    }
+</style>
+
+<div class="container-fluid" style="position: relative;">
+    <div id="scanner-holder">
+        <video id="scanner"></video>
+        <div class="messages">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    <div class="manual-entry-container">
+        <h3 style="font-size: 24px;">Camera not available? Enter Employee ID manually:</h3>
+        <form id="employeeIDForm" method="post" action="{% url 'scan_qr' %}">
+            {% csrf_token %}
+            <input type="text" id="employeeIDInput" name="employee_code" placeholder="Employee ID" required>
+            <input type="hidden" name="check_in_out" id="checkInOutInput" value="M_CI"> <!-- Add a hidden input for check-in/out type -->
+            <input type="hidden" name="facial_data" id="facial_data"> <!-- Hidden input for facial data -->
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const args = {
+        video: document.getElementById('scanner'),
+        mirror: false
+    };
+
+    window.URL.createObjectURL = (stream) => {
+        args.video.srcObject = stream;
+        return stream;
+    };
+
+    const scanner = new Instascan.Scanner(args);
+    scanner.addListener('scan', function(content) {
+        console.log("QR code scanned: " + content);
+        document.getElementById('employeeIDInput').value = content; // Set the scanned content to the input field
+
+        // Redirect to scan_face after QR scan
+        window.location.href = "{% url 'scan_face' %}";
+    });
+
+    Instascan.Camera.getCameras().then(function(cameras) {
+        if (cameras.length > 0) {
+            scanner.start(cameras[0]);
+        } else {
+            console.error('No cameras found.');
+        }
+    }).catch(function(e) {
+        console.error(e);
+    });
+</script>

@@ -1,0 +1,92 @@
+<!-- edit_payroll_info.html -->
+{% extends "base.html" %}
+{% load humanize %}
+{% load customfilter %}
+{% block pageContent %}
+
+<style>
+    .container1 {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+</style>
+
+<div class="container1" id="payroll-container">
+    <form action="{% url 'save_payroll' %}" method="POST" id="pay-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="payroll_id" value="{{ payroll.id }}">
+        <h1>Edit Payroll Information</h1>
+        <div class="form-group mt-3">
+            <label for="employee_id">Employee ID</label>
+            <input type="text" class="form-control" id="employee_id" name="employee_id" value="{{ employee.id }}" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="start_date">Start Date</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="end_date">End Date</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="incentive_pay">Incentive Pay</label>
+            <input type="text" class="form-control" id="incentive_pay" name="incentive_pay" value="{{ payroll.incentive_pay }}" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="house_rent_allowance">House Rent Allowance</label>
+            <input type="text" class="form-control" id="house_rent_allowance" name="house_rent_allowance" value="{{ payroll.house_rent_allowance }}" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="meal_allowance">Meal Allowance</label>
+            <input type="text" class="form-control" id="meal_allowance" name="meal_allowance" value="{{ payroll.meal_allowance }}" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="basic_pay">Daily Rate</label>
+            <input type="text" class="form-control" id="loan" name="basic_pay" value="{{ payroll.basic_pay }}">
+        </div>
+        <!-- Add fields for any additional information here -->
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
+</div>
+{% endblock pageContent %}
+
+{% block ScriptBlock %}
+<script>
+$(document).ready(function() {
+    $('#pay-form').on('submit', function(event) {
+        event.preventDefault(); // Prevent the form from submitting the traditional way
+
+        // Include employee_id, start_date, and end_date in the form data
+        var formData = $(this).serializeArray();
+        formData.push({ name: 'employee_id', value: $('#employee_id').val() });
+        formData.push({ name: 'start_date', value: $('#start_date').val() });
+        formData.push({ name: 'end_date', value: $('#end_date').val() });
+
+        console.log(formData); // Debug: Check form data before submission
+
+        $.ajax({
+            url: '{% url "save_payroll" %}',
+            method: 'POST',
+            data: formData, // Include employee_id, start_date, and end_date in the form data
+            headers: {
+                'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Payroll information updated successfully!');
+                    // Optionally, you can redirect or update the UI here
+                } else {
+                    alert('An error occurred: ' + response.msg);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('An error occurred while updating payroll information.');
+            }
+        });
+    });
+});
+</script>
+{% endblock ScriptBlock %}

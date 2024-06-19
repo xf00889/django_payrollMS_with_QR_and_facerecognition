@@ -1,0 +1,127 @@
+{% extends "base2.html" %}
+{% load humanize %}
+{% load customfilter %}
+
+{% block pageContent %}
+    
+        <style>
+    .input-group {
+        position: relative;
+    }
+
+    label {
+        position: absolute;
+        top: 50%;
+        left: 10px;
+        transform: translateY(-50%);
+        color: #333;
+        font-weight: bold;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 20px; /* Adjust the border-radius as needed */
+    }
+</style>
+    
+<!-- Section: Content -->
+<h3 class="fw-bolder">{{ page_title }}</h3>
+<hr>
+    <br>
+        <div class="text-start mb-2">
+    <form id="search-form">
+        <div class="input-group">
+            <label for="search-input" >Search Employee</label>
+            <input type="text" class="form-control rounded-0" placeholder="Search by Name or ID" id="search-input">
+        </div>
+    </form>
+</div>
+    <br>
+
+<section class="py-3">
+    <div class="container">
+        <div class="card rounded-0 shadow-sm blur">
+            <div class="card-body">
+                <div class="container-fluid">
+                  
+                    <table class="table table-stripped table-bordered">
+                        <colgroup>
+                            <col width="25%">
+                            <col width="25%">
+                            <col width="25%">
+                            <col width="25%">
+                        </colgroup>
+                        <thead>
+                            <tr class="bg-primary bg-gradient text-light">
+                                <th class="text-center">Employee Code</th>
+                                <th class="text-center">Employee Name</th>
+                                <th class="text-center">Date Received</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payslip in payslips %}
+                            <tr>
+                                <td class="text-center">{{ payslip.payroll.employee.employee_code }}</td>
+                                <td>{{ payslip.payroll.employee.first_name }} {% if payslip.payroll.employee.middle_name %}{{ payslip.payroll.employee.middle_name }}{% endif %} {{ payslip.payroll.employee.last_name }}</td>
+                                <td>{{ payslip.date_received|date:"Y-m-d" }}</td>
+                                <td class="text-center">
+    <a href="#" class="view_payslip_emp" data-url="{% url 'view_payroll' payslip.id %}">View Payslip</a>
+</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <th colspan="4" class="text-center">No payroll data available</th>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock pageContent %}
+
+{% block ScriptBlock %}
+<script>
+
+$(function() {
+        $('#search-input').on('input', function() {
+            var searchValue = $(this).val().trim().toLowerCase();
+            $('tbody tr').each(function() {
+                var name = $(this).find('td:nth-child(2)').text().toLowerCase(); // Adjust the column index for Employee Name
+                var id = $(this).find('td:nth-child(1)').text().toLowerCase(); // Adjust the column index for Employee Code
+                if (name.includes(searchValue) || id.includes(searchValue)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    });
+
+
+
+
+    $(function() {
+        $('table').find('td, th').addClass('align-middle px-2 py-1');
+    });
+
+    function start_loader() {
+        if (!$('#pre-loader').length) {
+            $('body').append('<div id="pre-loader"><div class="lds-default"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div></div>');
+        }
+        $('body').addClass('loading');
+    }
+
+    function end_loader() {
+        $('#pre-loader').remove();
+        $('body').removeClass('loading');
+    }
+</script>
+
+</script>
+{% endblock ScriptBlock %}

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block pageContent %}
+<h3 class="fw-bolder">Record Facial Data for {{ employee.first_name }} {{ employee.last_name }}</h3>
+<hr>
+<section class="py-3">
+    <div class="container">
+        <div class="card rounded-0 shadow-sm blur">
+            <div class="card-body">
+                <div class="container-fluid text-center">
+                    <div id="message" class="alert alert-success mt-3" style="display: none;">Facial data saved successfully</div>
+                    <div id="camera" class="rounded"></div>
+                    <button id="capture" class="btn btn-primary btn-sm rounded-0 mt-3">Capture</button>
+                    <canvas id="snapshot" style="display: none;"></canvas>
+                    <form id="facial-data-form" action="{% url 'save-facial-data' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                        <input type="hidden" name="facial_data" id="facial_data">
+                        <button type="submit" class="btn btn-primary btn-sm rounded-0 mt-3">Save Facial Data</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    #camera video {
+        border-radius: 15px;
+        width: 40%;
+        height: auto;
+    }
+    #capture, #facial-data-form button {
+        display: block;
+        margin: 0 auto;
+    }
+</style>
+
+<script>
+    (function() {
+        var video = document.createElement('video');
+        var canvas = document.getElementById('snapshot');
+        var context = canvas.getContext('2d');
+        var captureButton = document.getElementById('capture');
+        var facialDataInput = document.getElementById('facial_data');
+        var messageDiv = document.getElementById('message');
+        var form = document.getElementById('facial-data-form');
+
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                    document.getElementById('camera').appendChild(video);
+                })
+                .catch(function(err) {
+                    console.error("Error accessing webcam: ", err);
+                });
+        }
+
+        function captureSnapshot() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            var dataURL = canvas.toDataURL('image/png');
+            facialDataInput.value = dataURL;
+        }
+
+        function showMessage() {
+            messageDiv.style.display = 'block';
+            setTimeout(function() {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        function redirectToEmployeeList() {
+            window.location.href = "{% url 'employee-list' %}";
+        }
+
+        captureButton.addEventListener('click', function() {
+            captureSnapshot();
+            alert('Facial data captured. Please save.');
+        });
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            var formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage();
+                    setTimeout(redirectToEmployeeList, 3000);
+                } else {
+                    alert(data.msg);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        startCamera();
+    })();
+</script>
+{% endblock pageContent %}

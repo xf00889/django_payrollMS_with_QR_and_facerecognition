@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scan Face</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        video {
+            border: 2px solid #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan Face</h1>
+    <form method="POST" id="faceForm" action="{% url 'scan_face' %}">
+        {% csrf_token %}
+        <input type="hidden" name="facial_data" id="facial_data">
+    </form>
+    <video id="video" width="640" height="480" autoplay></video>
+    {% for message in messages %}
+    <div class="message">{{ message }}</div>
+    {% endfor %}
+    <script>
+        const video = document.getElementById('video');
+        const faceForm = document.getElementById('faceForm');
+        const facialDataInput = document.getElementById('facial_data');
+        let capturing = true;
+
+        function captureFace() {
+            if (!capturing) return;
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataURL = canvas.toDataURL('image/png');
+            facialDataInput.value = dataURL;
+
+
+            faceForm.submit();
+        }
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                video.srcObject = stream;
+               
+                setInterval(captureFace, 5000);
+            })
+            .catch(function(error) {
+                console.log("Error accessing webcam: " + error);
+            });
+
+        faceForm.addEventListener('submit', function() {
+            capturing = false;
+        });
+    </script>
+</body>
+</html>

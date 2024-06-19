@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load customfilter %}
+{% block pageContent %}
+<style>
+    .container1 {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+</style>
+<h1 style="text-align: center;">Add Payroll Information</h1>
+<div class="container1" id="payroll-container">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    <form action="{% url 'save_payroll' %}" method="POST" id="pay-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="employee-id">Select Employee ID:</label>
+            <select class="form-select form-control" id="employee-id" name="employee_id">
+                <option value="">Select Employee</option> <!-- Placeholder option -->
+                <!-- Add dynamic options for employees here -->
+            </select>
+        </div>
+        <div id="employee-profile" class="mt-3">
+            <!-- Employee profile details will be displayed here after selecting employee name -->
+        </div>
+        <div class="form-group mt-3">
+            <label for="start_date">Start Date</label>
+            <input type="date" class="form-control" id="start_date" name="start_date" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="end_date">End Date</label>
+            <input type="date" class="form-control" id="end_date" name="end_date" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="incentive_pay">Incentive Pay</label>
+            <input type="text" class="form-control" id="incentive_pay" name="incentive_pay" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="house_rent_allowance">House Rent Allowance</label>
+            <input type="text" class="form-control" id="house_rent_allowance" name="house_rent_allowance" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="meal_allowance">Meal Allowance</label>
+            <input type="text" class="form-control" id="meal_allowance" name="meal_allowance" required>
+        </div>
+        <div class="form-group mt-3">
+            <label for="basic_pay">Daily Rate</label>
+            <input type="text" class="form-control" id="loan" name="basic_pay">
+        </div>
+        <!-- Add fields for any additional information here -->
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+    </form>
+</div>
+{% endblock pageContent %}
+{% block ScriptBlock %}
+    <script>
+    $(document).ready(function () {
+        // Function to handle form submission
+        $('#pay-form').on('submit', function (event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Serialize form data
+            var formData = $(this).serialize();
+
+            // Submit the form via AJAX
+            $.ajax({
+                url: '{% url "save_payroll" %}',
+                method: 'POST',
+                data: formData,
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // Redirect to the desired URL after successful submission
+                        window.location.href = '{% url "employee-list" %}';
+                    } else {
+                        // Display error message if the form submission fails
+                        alert('Failed to save payroll information: ' + response.msg);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    // Display error message if an AJAX error occurs
+                    alert('An error occurred while processing the request.');
+                }
+            });
+        });
+
+        // Fetch the list of employees
+        $.ajax({
+            url: '/get_employees/',
+            method: 'GET',
+            success: function (response) {
+                var employees = response.employees;
+                var selectDropdown = $('#employee-id');
+                selectDropdown.empty();
+                selectDropdown.append('<option value="">Select Employee</option>');
+                employees.forEach(function (employee) {
+                    selectDropdown.append('<option value="' + employee.id + '">' + employee.name + '</option>');
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log('An error occurred while fetching available employee data.');
+            }
+        });
+
+        // Fetch employee profile details on selection
+        $('#employee-id').change(function () {
+            var employeeId = $(this).val();
+            $.ajax({
+                url: '{% url "fetch_employee_profile" %}',
+                method: 'GET',
+                data: {employee_id: employeeId},
+                success: function (response) {
+                    var employeeData = JSON.parse(response);
+                    $('#start_date').val(employeeData.start_date);
+                    $('#end_date').val(employeeData.end_date);
+                    $('#pay_period').val(employeeData.pay_period);
+                    $('#incentive_pay').val(employeeData.incentive_pay);
+                    $('#house_rent_allowance').val(employeeData.house_rent_allowance);
+                    $('#meal_allowance').val(employeeData.meal_allowance);
+                    $('#loan').val(employeeData.loan);
+                },
+                error: function (xhr, status, error) {
+                    console.log('An error occurred while fetching employee profile details.');
+                }
+            });
+        });
+    });
+</script>
+{#<script>#}
+{#    $(document).ready(function () {#}
+{#        // Function to handle form submission#}
+{#        $('#pay-form').on('submit', function (event) {#}
+{#            event.preventDefault(); // Prevent the default form submission#}
+{##}
+{#            // Serialize form data#}
+{#            var formData = $(this).serialize();#}
+{##}
+{#            // Submit the form via AJAX#}
+{#            $.ajax({#}
+{#                url: '{% url "save_payroll" %}',#}
+{#                method: 'POST',#}
+{#                data: formData,#}
+{#                success: function (response) {#}
+{#                    if (response.status === 'success') {#}
+{#                        // Optionally, you can redirect or show a success message#}
+{#                        alert('Payroll information saved successfully!');#}
+{#                    } else {#}
+{#                        // Display error message if the form submission fails#}
+{#                        alert('Failed to save payroll information: ' + response.msg);#}
+{#                    }#}
+{#                },#}
+{#                error: function (xhr, status, error) {#}
+{#                    // Display error message if an AJAX error occurs#}
+{#                    alert('An error occurred while processing the request.');#}
+{#                }#}
+{#            });#}
+{#        });#}
+{##}
+{#        // Fetch the list of employees#}
+{#        $.ajax({#}
+{#            url: '/get_employees/',#}
+{#            method: 'GET',#}
+{#            success: function (response) {#}
+{#                var employees = response.employees;#}
+{#                var selectDropdown = $('#employee-id');#}
+{#                selectDropdown.empty();#}
+{#                selectDropdown.append('<option value="">Select Employee</option>');#}
+{#                employees.forEach(function (employee) {#}
+{#                    selectDropdown.append('<option value="' + employee.id + '">' + employee.name + '</option>');#}
+{#                });#}
+{#            },#}
+{#            error: function (xhr, status, error) {#}
+{#                console.log('An error occurred while fetching available employee data.');#}
+{#            }#}
+{#        });#}
+{##}
+{#        // Fetch employee profile details on selection#}
+{#        $('#employee-id').change(function () {#}
+{#            var employeeId = $(this).val();#}
+{#            $.ajax({#}
+{#                url: '{% url "fetch_employee_profile" %}',#}
+{#                method: 'GET',#}
+{#                data: {employee_id: employeeId},#}
+{#                success: function (response) {#}
+{#                    var employeeData = JSON.parse(response);#}
+{#                    $('#start_date').val(employeeData.start_date);#}
+{#                    $('#end_date').val(employeeData.end_date);#}
+{#                    $('#pay_period').val(employeeData.pay_period);#}
+{#                    $('#incentive_pay').val(employeeData.incentive_pay);#}
+{#                    $('#house_rent_allowance').val(employeeData.house_rent_allowance);#}
+{#                    $('#meal_allowance').val(employeeData.meal_allowance);#}
+{#                    $('#loan').val(employeeData.loan);#}
+{#                },#}
+{#                error: function (xhr, status, error) {#}
+{#                    console.log('An error occurred while fetching employee profile details.');#}
+{#                }#}
+{#            });#}
+{#        });#}
+{#    });#}
+{#</script>#}
+{% endblock ScriptBlock %}

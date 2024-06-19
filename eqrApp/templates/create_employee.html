@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block pageContent %}
+<div class="container">
+    <h2>Create Employee Account</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Create Account</button>
+    </form>
+</div>
+{% endblock pageContent %}
