@@ -1,0 +1,1 @@
+# django_payrollMS_with_QR_and_facerecognition
