@@ -237,7 +237,7 @@ def save_employee(request):
 
                         configuration = sib_api_v3_sdk.Configuration()
                         configuration.api_key[
-                            'api-key'] = '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'
+                            'api-key'] = ''
                         api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
                         send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
@@ -303,7 +303,7 @@ def save_facial_data(request):
     return JsonResponse({'status': 'failed', 'msg': 'Invalid request method'})
 
 
-#api-key: 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
+
 
 
 #backup
